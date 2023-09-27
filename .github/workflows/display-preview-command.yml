@@ -1,0 +1,48 @@
+name: Display preview command
+on:
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  comment-on-pull:
+    name: Comment On Pull
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract repository name and branch name
+        id: extract
+        run: |
+          repository_name=$(basename -s .git "$(git config --get remote.origin.url)")
+          branch_name=$(echo "${{ github.ref }}" | sed 's/refs\/heads\///')
+          base_branch_name=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+          base_branch_name_2=$(echo "${{ github.repository.default_branch }}")
+
+          echo "::set-output name=repository_name::${repository_name}"
+          echo "::set-output name=branch_name::${branch_name}"
+          echo "::set-output name=base_branch_name::${base_branch_name}"
+          echo "::set-output name=base_branch_name_2::${base_branch_name_2}"
+
+      - name: Comment on Pull Request
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const repositoryName = "${{ steps.extract.outputs.repository_name }}";
+            const branchName = "${{ steps.extract.outputs.branch_name }}";
+            const baseBranchName = "${{ steps.extract.outputs.base_branch_name }}";
+            const baseBranchName2 = "${{ steps.extract.outputs.base_branch_name2 }}";
+            console.log({repositoryName,
+              branchName,
+              baseBranchName,
+              baseBranchName2
+            });
+
+            const branch = branchName === baseBranchName2 ? "" : `#${process.env.GITHUB_REF_NAME}`;
+            const body = "The branch can be tried out by running:\n\n```\nelm-review --template " + repositoryName + "/preview" + branch + "\n```"
+
+            const defaultBranch = "main";
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            });
