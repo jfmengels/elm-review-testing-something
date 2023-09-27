@@ -8,6 +8,9 @@ jobs:
     name: Comment On Pull
     runs-on: ubuntu-latest
     steps:
+      - name: Printing everything
+        run: echo "$GITHUB_CONTEXT"
+
       - name: Extract repository name and branch name
         id: extract
         run: |
