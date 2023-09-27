@@ -15,6 +15,9 @@ jobs:
           branch_name=$(echo "${{ github.ref }}" | sed 's/refs\/heads\///')
           base_branch_name=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
           base_branch_name_2=$(echo "${{ github.repository.default_branch }}")
+          base_branch_name_3=$(echo "${{ github.repository.default_branch }}")
+          echo "base_branch_name_3 ${{ github.repository.default_branch }}"
+          echo "${{ github }}"
 
           echo "::set-output name=repository_name::${repository_name}"
           echo "::set-output name=branch_name::${branch_name}"
